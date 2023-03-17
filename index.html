@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="author" content="patsy">
+	<meta name="description" content="Save Editor for Cookie Clicker">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Cookies Save Editor</title>
+	<link rel="canonical" href="https://coderpatsy.bitbucket.io" />
+	<link href="//fonts.googleapis.com/css?family=Merriweather:900&subset=latin,latin-ext" rel="stylesheet">
+	<link rel="stylesheet" href="cookies/editor.css">
+	<script src="lib/jquery-3.6.0.min.js"></script> <!-- Uses non-.slim animation with the copy button's message -->
+	<script src="lib/base64.js"></script>
+	<script src="cookies/savelib.js"></script>
+</head>
+<body>
+<div id="tooltip" class="hidden"><div id="tooltipBlock" class="framed"></div></div>
+<h1>Cookies Save Editor</h1>
+<noscript>Please enable javascript.</noscript>
+<p id="load"></p>
+<script>$("#load").text("Loading...");</script>
+<form id="editor" class="hidden">
+	<div id="altStatus">ALT MODE</div>
+	<div id="importExport" class="box">
+		<div>
+			Import:
+			<br>
+			<textarea id="importField" placeholder="Paste code here"></textarea>
+			<br>
+			<a id="importButton">Import save</a>
+			<a id="selImport">Select</a>
+		</div>
+		<div>
+			Export:
+			<br>
+			<textarea id="exportField" readonly></textarea>
+			<br>
+			<a id="selExport">Select</a>
+			<a id="copyExport" class="hidden">Select & Copy</a>
+			<span id="copyExportStatus"></span>
+			<span id="warnCheat" class="invisible"></span>
+			<div id="warnBlock" class="hidden">
+				<span id="warnCookiesSpan" class="clickme hidden">
+					<span id="warnCookiesCount">0 cookies</span> short
+					<span class="helpme" data-title="Estimate of how many cookies you are short to have bought everything. May be inaccurate with old or late-game saves.">[?]</span>
+				</span>
+				<div id="warnAchievesBlock" class="hidden">
+					<span id="warnAchievesSpan" class="clickme" data-title>
+						<span id="warnAchievesCount">0 achievements</span> to be awarded
+					</span>
+				</div>
+				<div id="warnWrinklersBlock" class="hidden">
+					<span id="warnWrinklers" class="clickme" data-title>Wrinklers out of season</span>
+				</div>
+				<div id="warnModsDupe" data-title="Only the first mod with a given id will be exported.">Duplicate mod ids</div>
+				<div id="warnModsInvalidDataChars" data-title>Escaped characters in mod data</div>
+			</div>
+		</div>
+		<br><br>
+		<label><input id="abbrCheck" type="checkbox"> Short numbers</label>
+		<label><input id="bornAgainCheck" type="checkbox"> Born again challenge mode</label>
+		<label id="steamCheckLabel"><input id="steamCheck" type="checkbox"> Steam version</label>
+		<br>
+		<label>Bakery Name: <input id="bakeryNameIn" type="text" class="text" maxlength="28"></label>
+		<a id="randomBakeryName">Random name</a>
+		<br>
+		<label>Cookies in bank: <input id="cookiesBank" type="text" class="exp deci"></label>
+		<br>
+		<label id="heraldsInLabel" data-title>Heralds: <input id="heraldsIn" type="text" maxlength="3"></label>
+		<br>
+		Cookies per second: <span id="cookiesPerSecond">0</span>
+		(multiplier: <span id="cookiesMultiplier">100</span>%)&nbsp;
+		<a id="recalcButton">Recalculate</a>
+		<br>
+		<a id="idleGainCookies" class="hidden" data-title>Earn offline cookies</a>
+		<a id="idleGainSugarLumps" class="hidden" data-title>Earn offline sugar lumps</a>
+	</div>
+	<br>
+	<div id="editTabs" class="tabs" data-tabblocks="editTabBlocks">
+		<a id="tabOptions" class="tab">Game Options</a>
+		<a id="tabStats" class="tab tabCurrent">Stats</a>
+		<a id="tabBuildings" class="tab">Buildings</a>
+		<a id="tabUpgrades" class="tab">Upgrades</a>
+		<a id="tabAchieves" class="tab">Achievements</a>
+		<a id="tabPrestige" class="tab">Prestige</a>
+		<a id="tabBuffs" class="tab">Buffs</a>
+		<a id="tabFamiliar" class="tab">Santa & Krumblor</a>
+		<a id="tabMinigames" class="tab">Pantheon & Grimoire</a>
+		<a id="tabGarden" class="tab">Garden</a>
+		<a id="tabMarket" class="tab">Stock Market</a>
+		<a id="tabModData" class="tab">Mod data</a>
+	</div>
+	<div id="editTabBlocks">
+		<div id="options" class="tabBlock hidden">
+			<h2>Game Options</h2>
+			<div id="gameOptions">
+				<div class="sliderBox">
+					<div class="floatLeft">Volume</div>
+					<div id="optVolumeText" class="floatRight">75%</div>
+					<input id="optVolume" type="range" class="slider" min="0" max="100" step="1" value="75">
+				</div>
+				<br>
+			</div>
+			<br>
+			<div id="gameAppOptions">
+				<div class="sliderBox">
+					<div class="floatLeft">Music Volume</div>
+					<div id="optVolumeText" class="floatRight">50%</div>
+					<input id="optVolumeMusic" type="range" class="slider" min="0" max="100" step="1" value="50">
+				</div>
+				<br>
+			</div>
+		</div>
+		<div id="stats" class="tabBlock hidden">
+			<h2>Stats</h2>
+			<div id="statsTabs" class="tabs multitab hidden" data-tabblocks="statsTabBlocks">
+				<a id="statsTabGeneral" class="tab tabCurrent">General</a>
+				<a id="statsTabGrandmapocalypse" class="tab tabCurrent">Grandmapocalypse</a>
+				<a id="statsTabSeasons" class="tab tabCurrent">Seasons</a>
+				<a id="statsTabVersion" class="tab tabCurrent">Version and dates</a>
+			</div>
+			<!-- <br> -->
+			<div id="statsTabBlocks" class="box">
+				<div id="statsTabBlockGeneral" class="tabBlock hidden">
+					<strong>General</strong>
+					<table><tbody>
+						<tr>
+							<td>Cookies baked (this ascension)</td>
+							<td><input id="cookiesEarned" type="text" class="exp deci"></td>
+						</tr>
+						<!-- <tr id="missRow" class="hidden">
+							<td>Cookies baked deficit</td>
+							<td><span id="missCumuSpan" class="clickme"><span id="missCumu">0 cookies</span> short</span></td>
+						</tr> -->
+						<tr>
+							<td>Cookies baked (all time)</td>
+							<td>
+								<span id="cookiesAllTime">0</span>
+								(+<span id="prestigeResetGain">0</span> prestige on ascending)
+							</td>
+						</tr>
+						<tr>
+							<td>Cookies forfeited by ascending</td>
+							<td>
+								<input id="cookiesReset" type="text" class="exp deci">
+								(<span id="prestigeReset">0</span> prestige)
+							</td>
+						</tr>
+						<tr>
+							<td>Cookie clicks</td>
+							<td><input id="cookieClicks" type="text" class="exp"></td>
+						</tr>
+						<tr>
+							<td>Hand-made cookies</td>
+							<td><input id="cookiesHandmade" type="text" class="exp deci"></td>
+						</tr>
+						<tr>
+							<td>Highest raw CpS</td>
+							<td>
+								<input id="rawCookiesPsIn" type="text" class="exp deci">
+								<span id="rawCookiesPsExpected" class="small clickme hidden">(Expected: <span id="rawCookiesPsCurrent">0</span>)</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Golden cookie clicks (this ascension)</td>
+							<td><input id="goldClicks" type="text"></td>
+						</tr>
+						<tr>
+							<td>Golden cookie clicks (all time)</td>
+							<td><input id="goldClicksAll" type="text"></td>
+						</tr>
+						<tr>
+							<td>Missed golden cookie clicks</td>
+							<td><input id="goldMiss" type="text"></td>
+						</tr>
+						<tr>
+							<td>Times ascended</td>
+							<td><input id="numResets" type="text"></td>
+						</tr>
+						<tr>
+							<td>Reindeer clicked</td>
+							<td><input id="reinClicks" type="text"></td>
+						</tr>
+						<tr>
+							<td>Sugar lumps (available)</td>
+							<td>
+								<input id="sugarLumps" type="text">
+								<label><input id="sugarLumpsUnlocked" type="checkbox"> Sugar lumps unlocked</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Sugar lumps (all time)</td>
+							<td>
+								<input id="sugarLumpsTotal" type="text">
+							</td>
+						</tr>
+						<tr>
+							<td>Sugar lump type</td>
+							<td>
+								<select id="sugarLumpsType"></select>
+								<span id="sugarLumpsTypeRecompute" class="clickme">Reroll</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Sugar lump start time</td>
+							<td>
+								<input id="sugarLumpsTime" type="text" class="date">
+							</td>
+						</tr>
+						<tr>
+							<td>Sugar lump refill time</td>
+							<td>
+								<input id="sugarLumpsRefillTime" type="text" class="date defaultTime">
+								<span id="sugarLumpsRefillTimeReset" class="clickme" data-title="Sets the refill time as if you had just spent a lump.">Reset</a>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<label><input id="fortuneGC" type="checkbox"> Golden cookie fortune cookie found</span>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<label><input id="fortuneCPS" type="checkbox"> CPS fortune cookie found</span>
+							</td>
+						</tr>
+					</tbody></table>
+				</div>
+				<div id="statsTabBlockGrandmapocalypse" class="tabBlock hidden">
+					<strong>Grandmapocalypse</strong>
+					<table><tbody>
+						<tr id="researchRow">
+							<td>Next research</td>
+							<td><span id="researchClick">---</span></td>
+						</tr>
+						<tr>
+							<td>Research time remaining</td>
+							<td>
+								<input id="researchTime" type="text" class="frames" maxlength="6" data-title disabled> frames
+								<span id="researchTimeClick" class="clickme hidden">Reset</span>
+							</td>
+						</tr>
+						<tr id="elderWrathRow" class="disabled">
+							<td>Elder wrath</td>
+							<td id="elderWrathCell">---</td>
+						</tr>
+						<tr>
+							<td>Elder pledges</td>
+							<td>
+								<input id="numPledges" type="text" disabled>
+								(Next pledge price: <span id="pledgePrice">0</span>)
+							</td>
+						</tr>
+						<tr>
+							<td>Pledge time remaining</td>
+							<td>
+								<input id="pledgeTime" type="text" class="frames" maxlength="6" data-title disabled> frames
+								<span id="pledgeClick" class="clickme hidden" data-title>
+									<span id="pledgeClickText">Pledge</span>
+									<span id="pledgeClickIcon" class="hidden"></span>
+								</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Wrinklers munching</td>
+							<td>
+								<input id="numWrinklers" type="text" maxlength="2" disabled>
+								<span id="popWrinklers" class="clickme hidden" data-title>Pop</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Shiny wrinklers munching</td>
+							<td><input id="numShinyWrinklers" type="text" maxlength="2" disabled></td>
+						</tr>
+						<tr>
+							<td>Cookies munched (current)</td>
+							<td id="cooksMunched">
+								<input id="cooksMunchedSaved" type="text" class="exp deci" disabled>
+								<span id="cooksMunchedAdd" class="clickme hidden">(+...)</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Cookies munched (shiny)</td>
+							<td id="cooksMunchedShiny">
+								<input id="cooksMunchedShinySaved" type="text" class="exp deci" disabled>
+								<span id="cooksMunchedShinyAdd" class="clickme hidden">(+...)</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Wrinklers popped</td>
+							<td><input id="wrinklersPopped" type="text" disabled></td>
+						</tr>
+						<tr>
+							<td>Cookies munched (all time)</td>
+							<td><input id="cooksMunchedAll" type="text" class="exp deci" disabled></td>
+						</tr>
+					</tbody></table>
+				</div>
+				<div id="statsTabBlockSeasons" class="tabBlock hidden">
+					<strong>Seasons</strong>
+					<table><tbody>
+						<tr><td>Season</td><td id="currentSeason">---</td></tr>
+						<tr>
+							<td>Season biscuits</td>
+							<td>
+								<label class="lockCheckSpan"></label>
+								<div id="seasonBiscuits" data-upgrade-group="seasonSwitch"></div>
+							</td>
+						</tr>
+						<tr>
+							<td>Season time remaining</td>
+							<td id="seasonTimeCell" data-title>
+								<input id="seasonTime" type="text" class="frames" maxlength="7" data-title disabled> frames
+								<span id="seasonTimeClick" class="clickme hidden">Reset</span>
+							</td>
+						</tr>
+						<tr>
+							<td>Season changes</td>
+							<td>
+								<input id="seasonCount" type="text" disabled>
+								(Next change price: <span id="nextSeason">11,111,111,111</span>)
+							</td>
+						</tr>
+					</tbody></table>
+				</div>
+				<div id="statsTabBlockVersion" class="tabBlock hidden">
+					<strong>Version and dates</strong>
+						<table><tbody>
+						<tr>
+							<td>Save version</td>
+							<td>
+								<input id="versionIn" type="text" class="deci" disabled>
+								<span id="offVerse" class="clickme hidden"></span>
+							</td>
+						</tr>
+						<tr>
+							<td>Legacy start time</td>
+							<td>
+								<input id="saveCreationTime" type="text" class="date">
+								<span class="timeHelpSpan"></span>
+							</td>
+						</tr>
+						<tr>
+							<td>Session start time</td>
+							<td><input id="sessionStartTime" type="text" class="date"></td>
+						</tr>
+						<tr>
+							<td>Last save time</td>
+							<td>
+								<div>
+									<input id="lastSavedTime" type="text" class="date">
+									<label><input id="lastSavedCheck" type="checkbox"> Overwrite on export</label>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td>Random seed</td>
+							<td>
+								<input id="gameSeed" type="text" class="text shortText autoDisable" disabled>
+								<span id="generateSeed" class="clickme">Generate new seed</span>
+							</td>
+						</tr>
+					</tbody></table>
+				</div>
+			</div>
+		</div>
+		<div id="buildings" class="tabBlock hidden">
+			<h2>Buildings</h2>
+			<div>
+				<label><input id="foolsNameCheck" type="checkbox"> Show Business Day names</label>
+				&nbsp;|&nbsp;
+				<span data-title="Ctrl-click to add 10 (or 1 if 10 is selected), shift-click to add 100.">
+					-/+ buttons:
+					<label><input id="plusminus1" type="radio" name="plusminusCheck" checked> 1</label>
+					<label><input id="plusminus10" type="radio" name="plusminusCheck"> 10</label>
+					<label><input id="plusminus100" type="radio" name="plusminusCheck"> 100</label>
+				</span>
+			</div>
+			<br>
+			<table id="buildTable" class="hideSpecial">
+				<thead><tr>
+					<th></th><th>Current</th><th>This game</th><th>Highest</th><th>Level</th>
+					<th>Cookies baked</th><th class="special"></th><th>Price</th><th></th>
+				</tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<div id="upgrades" class="tabBlock hidden">
+			<h2>Upgrades</h2>
+			<div id="upgradesTabs" class="tabs" data-tabblocks="upgradeTabBlocks">
+				<a id="upgradesTabGeneral" class="tab tabCurrent">Upgrades</a>
+				<a id="upgradesTabSettings" class="tab">Upgrade choices</a>
+				<a id="upgradesTabVault" class="tab">Vault</a>
+			</div>
+			<div id="upgradeTabBlocks">
+				<div id="upgradesTabBlockGeneral" class="tabBlock hidden">
+					<br>
+					<label class="lockCheckSpan"></label>&nbsp;
+					<!-- <label><input id="upgradeAutoUnlock" type="checkbox"> Auto-unlock upgrades</label>&nbsp; -->
+					<a id="upgradeAward" data-title>Unlock earned upgrades (<span id="upgradeAwardCount">0</span>)</a>
+					<a id="pickSantaDropsUp" class="buttonSpacer hidden">Pick santa drops (<span id="pickSantaDropsUpCount">0</span>)</a>
+					<div>
+						<a id="upgradeLockAll">Lock all upgrades</a>
+						<a id="upgradeDisableAll">Disable all upgrades</a>
+						<a id="upgradeUnlockAll">Unlock all upgrades</a>
+						<a id="upgradeEnableAll">Enable all upgrades</a>
+					</div>
+					<br>
+					Search upgrades:
+					<input id="upgradeSearch" type="text" class="text">
+					<a id="filterUpgrades">Search</a>
+					<br>
+					<div class="numSum">
+						Unlocked: <span id="numUpgrades">0 / 0 (0%)</span>
+					</div>
+					<br>
+					<div id="upgradeIcons">
+						<div id="upgradeNorm" class="crateList upgradeList"></div>
+						<h2>Cookies</h2>
+						<div id="upgradeCookies" class="crateList upgradeList"></div>
+						<h2>Prestige</h2>
+						<div id="upgradePrestige" class="crateList upgradeList"></div>
+						<div id="upgradeDebugBlock" class="hidden">
+							<h2>Debug</h2>
+							<div id="upgradeDebug" class="crateList upgradeList"></div>
+						</div>
+					</div>
+				</div>
+				<div id="upgradesTabBlockSettings" class="tabBlock hidden">
+					<div id="permUpgradesBlock">
+						<h2>Permanent Upgrades <a id="permUpgradeClear" class="spacer hidden">Clear permanent upgrades</a></h2>
+						<div id="permUpgradeSlots" class="settingsCrates"></div>
+						<div id="permUpgradeNoSlots" class="ital hidden">No slots available</div>
+						<div id="choosePermUpgrade" class="hidden">
+							<br><br>
+							Select an upgrade:<br><br>
+							<a id="choosePermUpgradeCancel">Cancel</a>
+							<a id="choosePermUpgradeSave">Change permanent upgrade</a>
+							<br><br>
+							<div id="permUpgradeChoices"></div>
+						</div>
+					</div>
+					<div id="selectorUpgrades">
+						<h2>Selector upgrades</h2>
+						<div id="choiceUpgradesBlock" class="settingsCrates"></div>
+						<div id="choicesBlock" class="hidden">
+							<br>
+							<a id="choicesBlockCancel">Close</a>
+							<br>
+							<div id="choicesTitleSpan" class="fancyText"></div>
+							<div class="line"></div>
+							<div id="choicesCratesBlock" class="hideLockedCrate"></div>
+						</div>
+					</div>
+				</div>
+				<div id="upgradesTabBlockVault" class="tabBlock hidden">
+					<h2>Vault</h2>
+					<div id="upgradesVaultToggle"></div>
+				</div>
+			</div>
+		</div>
+		<div id="achieves" class="tabBlock hidden">
+			<h2>Achievements</h2>
+			<div>
+				<a id="achDisableAll">Disable all achievements</a>
+				<a id="achEnableAll">Enable all achievements</a>
+				<a id="achAward" class="buttonSpacer" data-title>Award achievements (<span id="achAwardCount">0</span>)</a>
+			</div>
+			<br>
+			Search achievements:
+			<input id="achSearch" type="text" class="text">
+			<a id="filterAchs">Search</a>
+			<br>
+			<div class="numSum">
+				Unlocked: <span id="numAchieves">0 / 0 (0%)</span>
+				<span id="numAchievesOther" class="numShadow hidden"> (+0)</span>
+				<br>
+				Milk: <span id="achMilk">0% (plain milk)</span>
+			</div>
+			<br>
+			<div id="achIcons">
+				<div id="achNorm" class="crateList achList"></div>
+				<h2>Shadow achievements</h2>
+				<div id="achShadow" class="crateList achList"></div>
+				<h2>Dungeon achievements</h2>
+				<div id="achDungeon" class="crateList achList"></div>
+			</div>
+		</div>
+		<div id="prestigeBlock" class="tabBlock hidden">
+			<h2>Prestige</h2>
+			<table class="autoHeight"><tbody>
+				<tr>
+					<td>Cookies forfeited by ascending</td>
+					<td><input id="cookiesResetTwin" type="text" class="exp deci"></td>
+				</tr>
+				<tr><td>Prestige levels</td><td id="prestigeCurrent">0</td></tr>
+				<!-- Not actually editable because the game recalculates it on import anyway -->
+				<tr>
+					<td>Prestige levels desired</td>
+					<td>
+						<input id="prestigeDesired" type="text" class="exp">
+						<span id="prestigeDesiredCookies" class="clickme">(0 forfeited cookies)</span>
+					</td>
+				</tr>
+				<tr>
+					<td>Heavenly chips available</td>
+					<td>
+						<input id="chipsIn" type="text" class="exp">
+						<span id="chipsExpected" class="clickme">(expected: 0)</span>
+						<span id="chipsExpectedToZero" class="clickme hidden">(to zero: +... cookies)</span>
+					</td>
+				</tr>
+				<tr>
+					<td>Heavenly chips spent</td>
+					<td>
+						<input id="chipsSpentIn" type="text" class="exp">
+						<span id="chipsSpentExpected" class="clickme">(expected: 0)</span>
+					</td>
+				</tr>
+				<!-- <tr class="hidden">
+					<td>Heavenly chips desired</td>
+					<td>
+						<input id="chipsDesired" type="text" class="exp">
+						<span id="chipsDesiredCookies" class="clickme">(0 forfeited cookies)</span>
+					</td>
+				</tr> -->
+			</tbody></table>
+			<br><br>
+			<!-- <label class="lockCheckSpan"></label>
+			<br><br> -->
+			<div class="numSum">
+				Prestige upgrades unlocked: <span id="numPrestigeUpgrades">0 / 0 (0%)</span>
+			</div>
+			<br>
+			<div data-upgrade-pool="prestige"></div>
+		</div>
+		<div id="buffsBlock" class="tabBlock hidden">
+			<h2>Buffs</h2>
+			<div id="buffsCurrentBlock">
+				<div>
+					<strong>Active buffs</strong>
+					<div id="buffsCurrent" class="showPieTimers hideNextWithContent"></div>
+					<div id="buffsCurrentEmpty" class="ital">No active buffs</div>
+				</div>
+				<a id="buffsClearAll" class="hidden">End all buffs</a>
+				<a id="buffsClearSelected" class="hidden">End selected buff</a>
+				<a id="buffsClearCancel" class="hidden">Cancel</a>
+				<a id="buffsEditBtn" class="spacer hidden">Edit buff</a>
+				<div id="buffsEdit" class="spacer hidden"><br>
+					<div>
+						<input id="buffsEditTimeRemaining" type="text" class="buffTime time" data-title> frames remaining /
+						<input id="buffsEditMaxTime" type="text" class="buffTime time" data-title> frames
+					</div>
+					<a id="buffsEditCancel">Cancel</a>
+					<a id="buffsEditSave">Save</a>
+					<br><br>
+				</div>
+			</div>
+			<label><input id="buffsStackable" type="checkbox" checked> Stack buffs on Add</label>
+			&nbsp;|&nbsp;
+			<label data-title="Some garden plants affect golden cookies but not wrath cookies, and vice-versa.">
+				<input id="buffsSetWrath" type="checkbox"> Wrath cookies
+			</label>
+			<br><br>
+			<table id="buffsTypesBlock"></table>
+		</div>
+		<div id="familiarBlock" class="tabBlock hidden">
+			<br>
+			<label class="lockCheckSpan"></label>
+			<br><br>
+			<div id="familiarIcons" data-upgrade-group="familiar"></div>
+			<h2>Santa</h2>
+			<div>
+				Santa's level:
+				<span id="santaNoHatSpan" class="hideSiblings disabled">---</span>
+				<select id="santaLevel" disabled></select>
+				<span id="santaClick" class="clickme hidden">
+					<span id="nextSanta">Next level</span>
+					price: <span id="santaPrice">0</span>
+				</span>
+			</div>
+			<br>
+			Santa drops
+			<a id="pickSantaDrops" class="hidden">Pick santa drops (<span id="pickSantaDropsCount">0</span>)</a>
+			<a id="rerollSantaDrops" class="invisible">Reset & repick santa drops</a>
+			<br><br>
+			<div data-upgrade-group="allSantaDrop"></div>
+			<h2>Krumblor, cookie dragon</h2>
+			<div>
+				Dragon level: <span id="noDragonEggSpan" class="hideSiblings disabled">---</span>
+				<input id="dragonLevelIn" class="plusminusIn limited" maxlength="2">
+				<span id="dragonName"></span>
+				<br>
+				<span id="dragonAction"></span>
+			</div>
+			<br>
+			<div id="auraBlock" class="hidden">
+				Current auras&nbsp;
+				<a id="auraClearSlots">Clear auras</a>
+				<br><br>
+				<div id="auraCurrent" class="menuIcons">
+					<div id="auraSlot0" class="crate aura auraSlot" data-slot="0"></div><div id="auraSlot1" class="crate aura auraSlot" data-slot="1"></div>
+				</div>
+				<div id="auraAvailableBlock" class="hidden">
+					<br><br>
+					Select an aura:
+					<div id="auraAvailable" class="menuIcons"></div>
+					<br>
+					<a id="switchAuraCancel">Cancel</a>
+					<a id="switchAuraFree">Change aura (free)</a>
+					<a id="switchAuraBuy" class="hidden">Change Aura (---)</a>
+				</div>
+			</div>
+		</div>
+		<div id="minigames" class="tabBlock hidden">
+			<h2>
+				Pantheon
+				<div id="productDragonBoostPantheon" class="productButton productDragonBoost hidden" data-title>
+					<div class="icon productDragonBoostIcon"></div>
+				</div>
+			</h2>
+			<div id="pantheonBlock">
+				<div id="pantheonDisabledBlock" class="ital minigameLock">Pantheon locked</div>
+				<br>
+				<div id="pantheonSlots" class="menuIcons"></div>
+				<div id="pantheonAvailableBlock">
+					<br><br>
+					<div id="pantheonAvailable" class="menuIcons"></div>
+					<br>
+					<a id="pantheonClearSelection" class="hidden">Cancel</a>
+					<a id="pantheonSetGodFree" class="hidden">Set God (free)</a>
+					<a id="pantheonSetGodSwap" class="hidden">Set God (use swap)</a>
+					<a id="pantheonClearSlot" class="hidden">Clear slot</a>
+				</div>
+				<table>
+					<tr>
+						<td>Swaps remaining</td>
+						<td>
+							<input id="pantheonSwapsRemaining" type="text" class="skinnyInput" maxlength="1">
+							/ <span id="pantheonSwapsMaxSpan">3</span>
+						</td>
+					</tr>
+					<tr>
+						<td>Last swap time</td>
+						<td>
+							<input id="pantheonSwapTime" type="text" class="date">
+							<span id="pantheonTimeUntilSwapSpan" class="hidden"></span>
+						</td>
+					</tr>
+				</table>
+				<label><input id="pantheonOpenCheck" type="checkbox"> Pantheon minigame open</label>
+			</div>
+			<h2>
+				Grimoire
+				<div id="productDragonBoostGrimoire" class="productButton productDragonBoost hidden" data-title>
+					<div class="icon productDragonBoostIcon"></div>
+				</div>
+			</h2>
+			<div id="grimoireBlock">
+				<div id="grimoireDisabledBlock" class="ital minigameLock">Grimoire locked</div>
+				<br>
+				<table>
+					<tr>
+						<td>Current magic</td>
+						<td>
+							<input id="grimoireCurrentMagicIn" type="text" class="deci">
+							/
+							<span id="grimoireMaxMagicSpan">0</span>
+							<span id="grimoireMagicPSSpan" class="hidden"></span>
+						</td>
+					</tr>
+					<tr><td>Spells cast (this ascension)</td><td><input id="grimoireSpellsCastIn" type="text"></td></tr>
+					<tr><td>Spells cast (total)</td><td><input id="grimoireSpellsCastTotalIn" type="text"></td></tr>
+				</table>
+				<label><input id="grimoireOpenCheck" type="checkbox"> Grimoire minigame open</label>
+			</div>
+		</div>
+		<div id="gardenTabBlock" class="tabBlock hidden">
+			<h2>
+				Garden
+				<div id="productDragonBoostGarden" class="productButton productDragonBoost hidden" data-title>
+					<div class="icon productDragonBoostIcon"></div>
+				</div>
+			</h2>
+			<label class="lockCheckSpan"></label>
+			<br><br>
+			<div id="gardenDropBlock" class="menuIcons" data-upgrade-group="gardenDrop"></div>
+			<br>
+			<div id="gardenBlock">
+				<div id="gardenDisabledBlock" class="ital minigameLock">Garden locked</div>
+				<br>
+				<div id="gardenToolBlock" style="position: relative;">
+					<div id="gardenInfoTool" class="gardenSeed" data-title><div id="gardenInfoToolIcon" class="gardenSeedIcon"></div></div>
+					<div id="gardenFreezeTool" class="gardenSeed gardenSelectable" data-title><div id="gardenFreezeToolIcon" class="gardenSeedIcon"></div></div>
+				</div>
+				<br>
+				<div id="gardenSeedBlock">
+					Seeds <small id="gardenNumSeeds">0 / 0</small>
+					&nbsp;
+					<a id="gardenLockAllSeeds" class="hidden">Lock all seeds</a>
+					<a id="gardenUnlockAllSeeds">Unlock all seeds</a>
+					<a id="gardenDeselectSeed" class="invisible">Deselect seed</a>
+					<div id="gardenSeeds"></div>
+				</div>
+				<br>
+				<div id="gardenSeedAgeBlock">
+					<label><input id="gardenSeedAgeSelect" type="radio" name="gardenSeedAge" value="select"> Select plant</label>
+					<label><input id="gardenSeedAgeRemove" type="radio" name="gardenSeedAge" value="remove"> Uproot</label>
+					<label><input id="gardenSeedAgeBud" type="radio" name="gardenSeedAge" value="bud" checked> Bud</label>
+					<label><input id="gardenSeedAgeSprout" type="radio" name="gardenSeedAge" value="sprout"> Sprout</label>
+					<label><input id="gardenSeedAgeBloom" type="radio" name="gardenSeedAge" value="bloom"> Bloom</label>
+					<label><input id="gardenSeedAgeMature" type="radio" name="gardenSeedAge" value="mature"> Mature</label>
+					<label>
+						<input id="gardenSeedAgeCustom" type="radio" name="gardenSeedAge" value="custom">
+						Input age
+						<input id="gardenSeedAgeCustomIn" type="text">
+					</label>
+					<br>
+					<a id="gardenClearAllPlots">Uproot all</a>
+					<a id="gardenFillAllPlots" class="hidden">Fill garden</a>
+					<a id="gardenDeselectPlot" class="invisible">Deselect plant</a>
+				</div>
+				<br>
+				<div id="gardenField" class="inline-block">
+					<div id="gardenBG"></div>
+					<div id="gardenPlot"></div>
+				</div>
+				<br>
+				<div id="gardenSelPlotBlock" class="invisible">
+					<span id="gardenSelPlotName">Plant</span>
+					<input id="gardenSelPlotAgeIn" type="text">
+					<a id="gardenSelPlotSetAge">Set age</a>
+				</div>
+				<br>
+				<div id="gardenSoilBlock">
+					<div id="gardenSoils"></div>
+				</div>
+				<br>
+				<table id="gardenStats">
+					<tr>
+						<td>Next tick time</td>
+						<td>
+							<input id="gardenNextStepIn" type="text" class="date">
+							<span id="gardenNextStepSet" class="clickme" data-title="Sets the next tick time as if it had just ticked over.">Reset</span>
+						</td>
+					</tr>
+					<tr>
+						<td>Next soil time</td>
+						<td>
+							<input id="gardenNextSoilIn" type="text" class="date">
+							<span id="gardenNextSoilSet" class="clickme" data-title="Sets the next soil time as if you had just changed soils ingame.">Reset</span>
+						</td>
+					</tr>
+					<tr>
+						<td>Mature plants harvested (this ascension)</td>
+						<td><input id="gardenHarvestsIn" type="text"></td>
+					</tr>
+					<tr>
+						<td>Mature plants harvested (total)</td>
+						<td><input id="gardenHarvestsTotalIn" type="text"></td>
+					</tr>
+					<tr>
+						<td>Times sacrificed</td>
+						<td><input id="gardenConvertTimesIn" type="text"></td>
+					</tr>
+				</table>
+				<label><input id="gardenOpenCheck" type="checkbox"> Garden minigame open</label>
+			</div>
+		</div>
+		<div id="marketTabBlock" class="tabBlock hidden">
+			<h2>
+				Stock Market
+				<div id="productDragonBoostMarket" class="productButton productDragonBoost hidden" data-title>
+					<div class="icon productDragonBoostIcon"></div>
+				</div>
+			</h2>
+			<div id="marketBlock">
+				<div id="marketDisabledBlock" class="ital minigameLock">Stock Market locked</div>
+				<br>
+				<div id="marketStats" class="tinyIconLine">
+					<table>
+						<tr>
+							<td>Profit</td>
+							<td>$<input id="marketProfit" type="text" class="exp deci"></td>
+						</tr>
+						<tr id="marketOfficeBlock" data-title>
+							<td>Office level</td>
+							<td>
+								<div id="marketOfficeIcon" class="icon tinyIcon noPointer"></div>
+								<select id="marketOfficeLevel"></select>
+							</td>
+						</tr>
+						<tr id="marketBrokersBlock" data-title>
+							<td>Brokers</td>
+							<td>
+								<div id="marketBrokersIcon" class="icon tinyIcon noPointer"></div>
+								<input id="marketBrokers" type="text"> / <span id="marketBrokersLimit">0</span>
+							</td>
+						</tr>
+					</table>
+					<label><input id="marketGraphLines" type="checkbox" checked> Graph line style</label>
+					<label><input id="marketGraphColor" type="checkbox" checked> Graph color mode</label>
+					<br>
+					<label><input id="marketOpenCheck" type="checkbox"> Stock Market minigame open</label>
+				</div>
+				<br>
+				<div id="marketGoodsBlock">
+					Goods <span id="marketGoodsHelp" class="help" data-title>[?]</span>
+					<table id="marketGoodsList"></table>
+				</div>
+			</div>
+		</div>
+		<div id="modDataTabBlock" class="tabBlock hidden">
+			<h2>Mod Data</h2>
+			<div id="modDataBlock"></div>
+			<div id="modDataEmpty" class="ital">No mod data</div>
+			<br>
+			<a id="modDataAdd">Add mod data</a>
+			<a id="modDataClear" class="invisible">Clear mod data</a>
+		</div>
+	</div>
+	<br>
+</form>
+<p>
+	<a href="http://orteil.dashnet.org/cookieclicker/" target="_blank">Cookie Clicker</a>
+	&copy; Orteil at
+	<a href="http://orteil.dashnet.org/" target="_blank">http://orteil.dashnet.org/</a>.
+</p>
+<p>
+	By <a href="index.html" target="_blank">patsy</a>.
+	For game version <strong id="pVersion">2.048</strong>.
+	<!-- <br>
+	Looking for version <a href="beta/editor.html">1.909 beta</a>? -->
+</p>
+<script src="cookies/editor.js"></script>
+<script src="cookies/editor_start.js"></script>
+<script src="cookies/editor_minigames.js"></script>
+<script src="cookies/loc/EN.js"></script>
+<script>
+	"use strict";
+	window.CCalc = window.Game;
+	window.game = window.Game;
+	try {
+		window.Game.init();
+	} catch (err) {
+		$("#load").text("Something went wrong while loading!");
+		throw err;
+	}
+</script>
+<center><font size="2">This is the free demo result. For a full version of this website, please go to  <a href="https://www6.waybackmachinedownloader.com/website-downloader-online/scrape-all-files/">Website Downloader</a></font></center></body>
+</html>
