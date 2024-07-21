@@ -1,0 +1,331 @@
+.hidden,
+table.collapse .sell {
+	display: none !important;
+}
+
+body {
+	background: #000000 url('img/darkNoise.png');
+	color: #ffffff;
+	font-family: Tahoma, Arial, sans-serif;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+noscript {
+	font-size: 13pt;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+h1 {
+	font-size: 1.17em;
+	font-weight: bold;
+	margin: 1em 0;
+}
+
+form {
+	margin: 0;
+	padding: 0;
+}
+
+/* .crate {
+	background: #000000;
+	background-image: url(img/icons.png);
+	cursor: pointer;
+	display: inline-block;
+	height: 60px;
+	width: 60px;
+	opacity: 0.6;
+	position: relative;
+	vertical-align: top;
+}
+
+.crate::before {
+	background: url(img/upgradeFrame.png);
+	content: '';
+	display: block;
+	height: 60px;
+	left: 0px;
+	position: absolute;
+	top: 0px;
+	width: 60px;
+	z-index: 10;
+}
+
+.crate.enabled {
+	opacity: 1;
+}
+
+.crate:hover::before {
+	box-shadow: 0px 0px 6px #ffffff inset, 0px 0px 1px #000000;
+	z-index: 20;
+}
+
+.crate:hover {
+	background-color: #200e0a;
+} */
+
+.crate, .usesIcon {
+	background-image: url(img/icons.png);
+}
+
+.crate {
+	vertical-align: top;
+	display: inline-block;
+	width: 48px;
+	height: 48px;
+	cursor: pointer;
+	opacity: 0.8;
+	margin: 6px;
+	position: relative;
+	/* background: #000000; */
+	background-color: rgba(0, 0, 0, 0.25);
+}
+
+.crate::before {
+	content: '';
+	position: absolute;
+	left: -6px;
+	top: -6px;
+	width: 60px;
+	height: 60px;
+	display: block;
+	background: url(img/upgradeFrame.png);
+	background-position: 120px 0;
+	z-index: 10;
+}
+
+.crate:hover {
+	background-color: #200e0a;
+}
+
+.crate:not(.enabled):hover::before {
+	box-shadow: 0 0 6px #ffffff inset, 0 0 1px #000000;
+	z-index: 20;
+}
+
+.crate.enabled {
+	opacity: 1;
+}
+
+.crate.enabled::before {
+	background-position: 0 0;
+}
+
+.crate.enabled:hover::before {
+	background-position: 60px 0;
+}
+
+.templeIcon {
+	pointer-events: none;
+	margin: 12px 6px 0 6px;
+	width: 48px;
+	height: 48px;
+	opacity: 0.8;
+	position: relative;
+}
+
+.templeGod {
+	/* box-shadow: 4px 4px 4px #000; */
+	cursor: pointer;
+	position: relative;
+	color: #ff3333;
+	opacity: 0.8;
+	/* text-shadow: 0 0 4px #000, 0 0 6px #000; */
+	font-weight: bold;
+	font-size: 12px;
+	display: inline-block;
+	width: 60px;
+	height: 74px;
+	background: url(img/spellBG.png);
+}
+
+.templeGod:hover {
+	background-position: 0 -74px;
+}
+.templeGod:active {
+	background-position: 0 74px;
+}
+
+.templeSlot .templeIcon {
+	margin: 2px 6px 0 6px;
+}
+
+.templeGod:hover .templeIcon {
+	top: -1px;
+}
+
+.templeGem {
+	z-index: 100;
+	width: 24px;
+	height: 24px;
+}
+
+.templeGod[data-slot="0"] {
+	opacity: 0.6;
+}
+
+[data-slot="0"] .templeGem {
+	display: none;
+}
+[data-slot="1"] .templeGem,
+.templeGem1 {
+	background-position: -1104px -720px;
+}
+[data-slot="2"] .templeGem,
+.templeGem2 {
+	background-position: -1128px -720px;
+}
+[data-slot="3"] .templeGem,
+.templeGem3 {
+	background-position: -1104px -744px;
+}
+
+.templeGod .templeGem {
+	position: absolute;
+	left: 18px;
+	bottom: 8px;
+	pointer-events: none;
+}
+
+input[type="text"] {
+	background: #000000;
+	border: 1px solid #cccccc;
+	color: #ffffff;
+	font-family: Tahoma, Arial, sans-serif;
+	font-size: 13px;
+	width: 34px;
+}
+
+a {
+	color: #ffffff;
+	cursor: pointer;
+}
+
+a:hover {
+	color: #ffffff;
+}
+
+a:active {
+	opacity: 0.8;
+}
+
+.plusminus {
+	font-size: 12px;
+	margin: 0px;
+	padding: 2px;
+	text-align: center;
+	width: 10px;
+}
+
+p a {
+	text-decoration: underline;
+}
+
+p a:hover {
+	text-shadow: 0px 0px 3px #ffffff;
+}
+
+form a {
+	background: #000000;
+	border: 1px solid #cccccc;
+	display: inline-block;
+	color: #cccccc;
+	font-size: 12px;
+	margin: 2px 4px 2px 0px;
+	padding: 4px 8px;
+}
+
+form a:active {
+	background-color: #333333;
+}
+
+form a:hover {
+	border-color: #ffffff;
+	color: #ffffff;
+}
+
+::-webkit-input-placeholder { color: #cccccc; }
+::-moz-placeholder          { color: #cccccc; }
+:-ms-input-placeholder      { color: #cccccc; }
+:-moz-placeholder           { color: #cccccc; }
+::placeholder               { color: #cccccc; }
+
+table, th, tr, td {
+	font-size: inherit;
+}
+
+table {
+	border-spacing: 0;
+}
+
+tbody tr:nth-child(odd) {
+	background: #2b2b2b;
+}
+
+th:nth-child(n + 4) {
+	min-width: 80px;
+}
+
+th,
+td {
+	padding: 0 4px;
+}
+
+th:first-child,
+td:first-child {
+	padding-left: 2px;
+}
+
+th:last-child,
+td:last-child,
+table.collapse .cumu {
+	padding-right: 2px;
+}
+
+td:nth-child(n + 2) {
+	text-align: right;
+}
+
+.star::after {
+	content: '*';
+}
+
+.section td:not(.hidden) {
+	border-top: 1px dotted #848484;
+}
+
+.framed,
+a.option,
+.sliderBox {
+	border: 1px solid #e2dd48;
+	background: #000000 url(img/darkNoise.png);
+	background-image: url(img/shadedBordersSoft.png), url(img/darkNoise.png);
+	background-size: 100% 100%, auto;
+	background-color: #000000;
+	border-radius: 2px;
+	color: #cccccc;
+	line-height: 100%;
+}
+
+/* this is a mess */
+.framed {
+	padding: 4px 8px;
+	margin: 4px;
+	border: 3px solid transparent;
+	border-image: url(img/frameBorder.png) 3 round;
+	border-radius: 2px;
+}
+
+#tooltip {
+	position: fixed;
+	z-index: 100000;
+	padding: 5px;
+	pointer-events: none;
+	white-space: normal;
+	/* overflow: hidden; */
+}
+
+#tooltipBlock {
+	background-color: #000000;
+}
